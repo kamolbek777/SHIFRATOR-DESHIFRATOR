@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shifrator va Deshifrator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            font-size: 2.5em;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .sections {
+            display: grid;
+            grid-template-columns: 1fr 1px 1fr;
+            flex: 1;
+            gap: 0;
+            padding: 20px;
+        }
+
+        .divider {
+            background: linear-gradient(to bottom, 
+                rgba(255,255,255,0.3) 0%,
+                rgba(255,255,255,0.8) 50%,
+                rgba(255,255,255,0.3) 100%);
+            width: 1px;
+            height: 100%;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section h2 {
+            color: white;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: white;
+            font-size: 1.1em;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 8px;
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: white;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .status.complete {
+            color: #16a34a;
+        }
+
+        .status.incomplete {
+            color: #ea580c;
+        }
+
+        .diagram {
+            flex: 1;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .formula {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border-left: 4px solid white;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .formula code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .circuit {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            gap: 30px;
+        }
+
+        .inputs, .outputs {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .wire {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .terminal {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 3px solid white;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .terminal.active-green {
+            background: #4ade80;
+            border-color: #22c55e;
+            box-shadow: 0 0 20px #4ade80;
+        }
+
+        .terminal.active-red {
+            background: #ef4444;
+            border-color: #dc2626;
+            box-shadow: 0 0 20px #ef4444;
+        }
+
+        .terminal:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+        }
+
+        .line {
+            flex: 1;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.6);
+            position: relative;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .line.active {
+            background: #4ade80;
+            box-shadow: 0 0 10px #4ade80;
+        }
+
+        .label {
+            font-weight: bold;
+            color: white;
+            min-width: 30px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            font-size: 1.1em;
+        }
+
+        .gate-box {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            padding: 50px 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.3em;
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+            min-width: 180px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 1024px) {
+            .sections {
+                grid-template-columns: 1fr;
+            }
+
+            .divider {
+                display: none;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    
+    <div class="container">
+        <h1>🔐 Shifrator va Deshifrator</h1>
+        
+        <div class="sections">
+            <!-- SHIFRATOR -->
+            <div class="section">
+                <h2>Shifrator</h2>
+                
+                <div class="input-group">
+                    <label for="shifrator-n">Kirishlar soni (N):</label>
+                    <input type="number" id="shifrator-n" min="1" max="16" value="4" placeholder="Kirishlar sonini kiriting">
+                </div>
+
+                <div id="shifrator-status"></div>
+
+                <div class="diagram">
+                    <div class="formula">
+                        <code>M = log₂(N) | Chiqishlar: M</code>
+                    </div>
+                    <div id="shifrator-circuit" class="circuit"></div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- DESHIFRATOR -->
+            <div class="section">
+                <h2>Deshifrator</h2>
+                
+                <div class="input-group">
+                    <label for="deshifrator-m">Kirishlar soni (M):</label>
+                    <input type="number" id="deshifrator-m" min="1" max="8" value="2" placeholder="Kirishlar sonini kiriting">
+                </div>
+
+                <div id="deshifrator-status" class="status complete">✓ To'liq Deshifrator</div>
+
+                <div class="diagram">
+                    <div class="formula">
+                        <code>N = 2^M | Chiqishlar: N</code>
+                    </div>
+                    <div id="deshifrator-circuit" class="circuit"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Particles.js configuration
+        particlesJS('particles-js', {
+            particles: {
+                number: { value: 100, density: { enable: true, value_area: 800 } },
+                color: { value: '#ffffff' },
+                shape: { type: 'circle' },
+                opacity: { value: 0.6, random: false },
+                size: { value: 4, random: true },
+                line_linked: {
+                    enable: true,
+                    distance: 150,
+                    color: '#ffffff',
+                    opacity: 0.5,
+                    width: 2
+                },
+                move: {
+                    enable: true,
+                    speed: 3,
+                    direction: 'none',
+                    random: false,
+                    straight: false,
+                    out_mode: 'out',
+                    bounce: false
+                }
+            },
+            interactivity: {
+                detect_on: 'canvas',
+                events: {
+                    onhover: { enable: true, mode: 'repulse' },
+                    onclick: { enable: true, mode: 'push' },
+                    resize: true
+                },
+                modes: {
+                    repulse: { distance: 120, duration: 0.4 },
+                    push: { particles_nb: 4 }
+                }
+            },
+            retina_detect: true
+        });
+
+        // Shifrator logic (1-indexed)
+        let selectedShifratorInput = -1;
+
+        function updateShifrator() {
+            const n = parseInt(document.getElementById('shifrator-n').value) || 0;
+            const m = n > 0 ? Math.ceil(Math.log2(n)) : 0;
+            
+            // Status
+            const statusDiv = document.getElementById('shifrator-status');
+            if (n > 0 && (n & (n - 1)) === 0) {
+                statusDiv.className = 'status complete';
+                statusDiv.textContent = '✓ To\'liq Shifrator';
+            } else if (n > 0) {
+                statusDiv.className = 'status incomplete';
+                statusDiv.textContent = '⚠ To\'liq emas Shifrator';
+            } else {
+                statusDiv.className = 'status';
+                statusDiv.textContent = '';
+            }
+
+            const circuit = document.getElementById('shifrator-circuit');
+            circuit.innerHTML = '';
+
+            if (n === 0 || m === 0) return;
+
+            const inputsDiv = document.createElement('div');
+            inputsDiv.className = 'inputs';
+
+            // 1-indexed inputs
+            for (let i = 1; i <= n; i++) {
+                const wire = document.createElement('div');
+                wire.className = 'wire';
+                
+                const terminal = document.createElement('div');
+                terminal.className = 'terminal';
+                terminal.dataset.index = i;
+                
+                if (selectedShifratorInput === i) {
+                    terminal.classList.add('active-green');
+                }
+
+                terminal.onclick = () => {
+                    selectedShifratorInput = i;
+                    updateShifrator();
+                };
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `I${i}`;
+
+                const line = document.createElement('div');
+                line.className = 'line';
+                if (selectedShifratorInput === i) {
+                    line.classList.add('active');
+                }
+
+                wire.appendChild(terminal);
+                wire.appendChild(label);
+                wire.appendChild(line);
+                inputsDiv.appendChild(wire);
+            }
+
+            const gateBox = document.createElement('div');
+            gateBox.className = 'gate-box';
+            gateBox.innerHTML = `SHIFRATOR<br>${n}→${m}`;
+
+            const outputsDiv = document.createElement('div');
+            outputsDiv.className = 'outputs';
+
+            // 1-indexed outputs
+            for (let i = 1; i <= m; i++) {
+                const wire = document.createElement('div');
+                wire.className = 'wire';
+
+                const line = document.createElement('div');
+                line.className = 'line';
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `O${i}`;
+
+                const terminal = document.createElement('div');
+                terminal.className = 'terminal';
+
+                // Calculate binary output (1-indexed)
+                if (selectedShifratorInput > 0) {
+                    const binary = (selectedShifratorInput - 1).toString(2).padStart(m, '0');
+                    if (binary[m - i] === '1') {
+                        terminal.classList.add('active-green');
+                        line.classList.add('active');
+                    }
+                }
+
+                wire.appendChild(line);
+                wire.appendChild(label);
+                wire.appendChild(terminal);
+                outputsDiv.appendChild(wire);
+            }
+
+            circuit.appendChild(inputsDiv);
+            circuit.appendChild(gateBox);
+            circuit.appendChild(outputsDiv);
+        }
+
+        // Deshifrator logic (1-indexed)
+        let selectedDeshifratorInputs = [];
+
+        function updateDeshifrator() {
+            const m = parseInt(document.getElementById('deshifrator-m').value) || 0;
+            const n = m > 0 ? Math.pow(2, m) : 0;
+
+            const circuit = document.getElementById('deshifrator-circuit');
+            circuit.innerHTML = '';
+
+            if (m === 0 || n === 0) return;
+
+            const inputsDiv = document.createElement('div');
+            inputsDiv.className = 'inputs';
+
+            // 1-indexed inputs
+            for (let i = 1; i <= m; i++) {
+                const wire = document.createElement('div');
+                wire.className = 'wire';
+                
+                const terminal = document.createElement('div');
+                terminal.className = 'terminal';
+                terminal.dataset.index = i;
+                
+                if (selectedDeshifratorInputs.includes(i)) {
+                    terminal.classList.add('active-red');
+                }
+
+                terminal.onclick = () => {
+                    const idx = selectedDeshifratorInputs.indexOf(i);
+                    if (idx > -1) {
+                        selectedDeshifratorInputs.splice(idx, 1);
+                    } else {
+                        selectedDeshifratorInputs.push(i);
+                    }
+                    updateDeshifrator();
+                };
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `I${i}`;
+
+                const line = document.createElement('div');
+                line.className = 'line';
+                if (selectedDeshifratorInputs.includes(i)) {
+                    line.classList.add('active');
+                }
+
+                wire.appendChild(terminal);
+                wire.appendChild(label);
+                wire.appendChild(line);
+                inputsDiv.appendChild(wire);
+            }
+
+            const gateBox = document.createElement('div');
+            gateBox.className = 'gate-box';
+            gateBox.innerHTML = `DESHIFRATOR<br>${m}→${n}`;
+
+            const outputsDiv = document.createElement('div');
+            outputsDiv.className = 'outputs';
+
+            // Calculate which output should be active
+            let activeOutput = 0;
+            for (let i = 1; i <= m; i++) {
+                if (selectedDeshifratorInputs.includes(i)) {
+                    activeOutput += Math.pow(2, m - i);
+                }
+            }
+
+            // 1-indexed outputs
+            for (let i = 1; i <= n; i++) {
+                const wire = document.createElement('div');
+                wire.className = 'wire';
+
+                const line = document.createElement('div');
+                line.className = 'line';
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `O${i}`;
+
+                const terminal = document.createElement('div');
+                terminal.className = 'terminal';
+
+                if (selectedDeshifratorInputs.length > 0 && (i - 1) === activeOutput) {
+                    terminal.classList.add('active-red');
+                    line.classList.add('active');
+                }
+
+                wire.appendChild(line);
+                wire.appendChild(label);
+                wire.appendChild(terminal);
+                outputsDiv.appendChild(wire);
+            }
+
+            circuit.appendChild(inputsDiv);
+            circuit.appendChild(gateBox);
+            circuit.appendChild(outputsDiv);
+        }
+
+        // Event listeners
+        document.getElementById('shifrator-n').addEventListener('input', () => {
+            selectedShifratorInput = -1;
+            updateShifrator();
+        });
+
+        document.getElementById('deshifrator-m').addEventListener('input', () => {
+            selectedDeshifratorInputs = [];
+            updateDeshifrator();
+        });
+
+        // Initial render
+        updateShifrator();
+        updateDeshifrator();
+    </script>
+</body>
+</html>
