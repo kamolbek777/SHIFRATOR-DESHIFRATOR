@@ -533,7 +533,11 @@
                 const terminal = document.createElement('div');
                 terminal.className = 'terminal';
 
-                if (selectedDeshifratorInputs.length > 0 && (i - 1) === activeOutput) {
+                // Agar hech qaysi kirish tanlanmagan bo'lsa, O1 yoniq turadi
+                if (selectedDeshifratorInputs.length === 0 && i === 1) {
+                    terminal.classList.add('active-red');
+                    line.classList.add('active');
+                } else if (selectedDeshifratorInputs.length > 0 && (i - 1) === activeOutput) {
                     terminal.classList.add('active-red');
                     line.classList.add('active');
                 }
