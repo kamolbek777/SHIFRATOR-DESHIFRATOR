@@ -464,8 +464,8 @@
             const inputsDiv = document.createElement('div');
             inputsDiv.className = 'inputs';
 
-            // 1-indexed inputs
-            for (let i = 1; i <= m; i++) {
+            // 1-indexed inputs (reverse order for correct display)
+            for (let i = m; i >= 1; i--) {
                 const wire = document.createElement('div');
                 wire.className = 'wire';
                 
