@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shifrator va Deshifrator</title>
+    <title>Raqamli Elektronika Simulyatori</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
     <style>
         * {
@@ -42,8 +42,52 @@
             text-align: center;
             color: white;
             font-size: 2.5em;
-            margin: 20px 0;
+            margin: 20px 0 10px 0;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .tab-button {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .tab-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab-button.active {
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            border-color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .tab-content {
+            display: none;
+            flex: 1;
+            padding: 0 20px 20px 20px;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
         }
 
         .sections {
@@ -51,7 +95,6 @@
             grid-template-columns: 1fr 1px 1fr;
             flex: 1;
             gap: 0;
-            padding: 20px;
         }
 
         .divider {
@@ -200,6 +243,12 @@
             box-shadow: 0 0 20px #ef4444;
         }
 
+        .terminal.active-blue {
+            background: #3b82f6;
+            border-color: #2563eb;
+            box-shadow: 0 0 20px #3b82f6;
+        }
+
         .terminal:hover {
             transform: scale(1.2);
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
@@ -221,7 +270,7 @@
         .label {
             font-weight: bold;
             color: white;
-            min-width: 30px;
+            min-width: 40px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             font-size: 1.1em;
         }
@@ -238,6 +287,36 @@
             box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
             min-width: 180px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .selector-group {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .selector-wire {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .selector-line {
+            width: 3px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+        }
+
+        .selector-line.active {
+            background: #3b82f6;
+            box-shadow: 0 0 10px #3b82f6;
         }
 
         @media (max-width: 1024px) {
@@ -252,6 +331,15 @@
             h1 {
                 font-size: 2em;
             }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                font-size: 1em;
+                padding: 10px 20px;
+            }
         }
     </style>
 </head>
@@ -259,53 +347,98 @@
     <div id="particles-js"></div>
     
     <div class="container">
-        <h1>🔐 Shifrator va Deshifrator</h1>
+        <h1>🔐 Raqamli Elektronika Simulyatori</h1>
         
-        <div class="sections">
-            <!-- SHIFRATOR -->
-            <div class="section">
-                <h2>Shifrator</h2>
-                
-                <div class="input-group">
-                    <label for="shifrator-n">Kirishlar soni (N):</label>
-                    <input type="number" id="shifrator-n" min="1" max="16" value="4" placeholder="Kirishlar sonini kiriting">
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('shifrator')">Shifrator / Deshifrator</button>
+            <button class="tab-button" onclick="switchTab('multiplexer')">Multiplekser / Demultiplekser</button>
+        </div>
+
+        <!-- SHIFRATOR / DESHIFRATOR TAB -->
+        <div id="shifrator-tab" class="tab-content active">
+            <div class="sections">
+                <div class="section">
+                    <h2>Shifrator</h2>
+                    
+                    <div class="input-group">
+                        <label for="shifrator-n">Kirishlar soni (N):</label>
+                        <input type="number" id="shifrator-n" min="1" max="16" value="4">
+                    </div>
+
+                    <div id="shifrator-status"></div>
+
+                    <div class="diagram">
+                        <div class="formula">
+                            <code>M = log₂(N) | Chiqishlar: M</code>
+                        </div>
+                        <div id="shifrator-circuit" class="circuit"></div>
+                    </div>
                 </div>
 
-                <div id="shifrator-status"></div>
+                <div class="divider"></div>
 
-                <div class="diagram">
-                    <div class="formula">
-                        <code>M = log₂(N) | Chiqishlar: M</code>
+                <div class="section">
+                    <h2>Deshifrator</h2>
+                    
+                    <div class="input-group">
+                        <label for="deshifrator-m">Kirishlar soni (M):</label>
+                        <input type="number" id="deshifrator-m" min="1" max="8" value="2">
                     </div>
-                    <div id="shifrator-circuit" class="circuit"></div>
+
+                    <div id="deshifrator-status" class="status complete">✓ To'liq Deshifrator</div>
+
+                    <div class="diagram">
+                        <div class="formula">
+                            <code>N = 2^M | Chiqishlar: N</code>
+                        </div>
+                        <div id="deshifrator-circuit" class="circuit"></div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div class="divider"></div>
+        <!-- MULTIPLEKSER / DEMULTIPLEKSER TAB -->
+        <div id="multiplexer-tab" class="tab-content">
+            <div class="sections">
+                <div class="section">
+                    <h2>Multiplekser</h2>
+                    
+                    <div class="input-group">
+                        <label for="mux-n">Kirishlar soni (N):</label>
+                        <input type="number" id="mux-n" min="2" max="16" value="4">
+                    </div>
 
-            <!-- DESHIFRATOR -->
-            <div class="section">
-                <h2>Deshifrator</h2>
-                
-                <div class="input-group">
-                    <label for="deshifrator-m">Kirishlar soni (M):</label>
-                    <input type="number" id="deshifrator-m" min="1" max="8" value="2" placeholder="Kirishlar sonini kiriting">
+                    <div class="diagram">
+                        <div class="formula">
+                            <code>S = log₂(N) | Selektorlar: S</code>
+                        </div>
+                        <div id="mux-circuit" class="circuit"></div>
+                    </div>
                 </div>
 
-                <div id="deshifrator-status" class="status complete">✓ To'liq Deshifrator</div>
+                <div class="divider"></div>
 
-                <div class="diagram">
-                    <div class="formula">
-                        <code>N = 2^M | Chiqishlar: N</code>
+                <div class="section">
+                    <h2>Demultiplekser</h2>
+                    
+                    <div class="input-group">
+                        <label for="demux-s">Selektorlar soni (S):</label>
+                        <input type="number" id="demux-s" min="1" max="8" value="2">
                     </div>
-                    <div id="deshifrator-circuit" class="circuit"></div>
+
+                    <div class="diagram">
+                        <div class="formula">
+                            <code>N = 2^S | Chiqishlar: N</code>
+                        </div>
+                        <div id="demux-circuit" class="circuit"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Particles.js configuration
+        // Particles.js
         particlesJS('particles-js', {
             particles: {
                 number: { value: 100, density: { enable: true, value_area: 800 } },
@@ -345,14 +478,27 @@
             retina_detect: true
         });
 
-        // Shifrator logic (1-indexed)
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tab === 'shifrator') {
+                document.querySelector('.tab-button:first-child').classList.add('active');
+                document.getElementById('shifrator-tab').classList.add('active');
+            } else {
+                document.querySelector('.tab-button:last-child').classList.add('active');
+                document.getElementById('multiplexer-tab').classList.add('active');
+            }
+        }
+
+        // SHIFRATOR LOGIC
         let selectedShifratorInput = -1;
 
         function updateShifrator() {
             const n = parseInt(document.getElementById('shifrator-n').value) || 0;
             const m = n > 0 ? Math.ceil(Math.log2(n)) : 0;
             
-            // Status
             const statusDiv = document.getElementById('shifrator-status');
             if (n > 0 && (n & (n - 1)) === 0) {
                 statusDiv.className = 'status complete';
@@ -367,29 +513,19 @@
 
             const circuit = document.getElementById('shifrator-circuit');
             circuit.innerHTML = '';
-
             if (n === 0 || m === 0) return;
 
             const inputsDiv = document.createElement('div');
             inputsDiv.className = 'inputs';
 
-            // 1-indexed inputs
             for (let i = 1; i <= n; i++) {
                 const wire = document.createElement('div');
                 wire.className = 'wire';
                 
                 const terminal = document.createElement('div');
                 terminal.className = 'terminal';
-                terminal.dataset.index = i;
-                
-                if (selectedShifratorInput === i) {
-                    terminal.classList.add('active-green');
-                }
-
-                terminal.onclick = () => {
-                    selectedShifratorInput = i;
-                    updateShifrator();
-                };
+                if (selectedShifratorInput === i) terminal.classList.add('active-green');
+                terminal.onclick = () => { selectedShifratorInput = i; updateShifrator(); };
 
                 const label = document.createElement('div');
                 label.className = 'label';
@@ -397,9 +533,7 @@
 
                 const line = document.createElement('div');
                 line.className = 'line';
-                if (selectedShifratorInput === i) {
-                    line.classList.add('active');
-                }
+                if (selectedShifratorInput === i) line.classList.add('active');
 
                 wire.appendChild(terminal);
                 wire.appendChild(label);
@@ -414,7 +548,6 @@
             const outputsDiv = document.createElement('div');
             outputsDiv.className = 'outputs';
 
-            // 1-indexed outputs
             for (let i = 1; i <= m; i++) {
                 const wire = document.createElement('div');
                 wire.className = 'wire';
@@ -429,7 +562,6 @@
                 const terminal = document.createElement('div');
                 terminal.className = 'terminal';
 
-                // Calculate binary output (1-indexed)
                 if (selectedShifratorInput > 0) {
                     const binary = (selectedShifratorInput - 1).toString(2).padStart(m, '0');
                     if (binary[m - i] === '1') {
@@ -449,7 +581,7 @@
             circuit.appendChild(outputsDiv);
         }
 
-        // Deshifrator logic (1-indexed)
+        // DESHIFRATOR LOGIC
         let selectedDeshifratorInputs = [];
 
         function updateDeshifrator() {
@@ -458,32 +590,23 @@
 
             const circuit = document.getElementById('deshifrator-circuit');
             circuit.innerHTML = '';
-
             if (m === 0 || n === 0) return;
 
             const inputsDiv = document.createElement('div');
             inputsDiv.className = 'inputs';
 
-            // 1-indexed inputs
             for (let i = 1; i <= m; i++) {
                 const wire = document.createElement('div');
                 wire.className = 'wire';
                 
                 const terminal = document.createElement('div');
                 terminal.className = 'terminal';
-                terminal.dataset.index = i;
-                
-                if (selectedDeshifratorInputs.includes(i)) {
-                    terminal.classList.add('active-red');
-                }
+                if (selectedDeshifratorInputs.includes(i)) terminal.classList.add('active-red');
 
                 terminal.onclick = () => {
                     const idx = selectedDeshifratorInputs.indexOf(i);
-                    if (idx > -1) {
-                        selectedDeshifratorInputs.splice(idx, 1);
-                    } else {
-                        selectedDeshifratorInputs.push(i);
-                    }
+                    if (idx > -1) selectedDeshifratorInputs.splice(idx, 1);
+                    else selectedDeshifratorInputs.push(i);
                     updateDeshifrator();
                 };
 
@@ -493,9 +616,7 @@
 
                 const line = document.createElement('div');
                 line.className = 'line';
-                if (selectedDeshifratorInputs.includes(i)) {
-                    line.classList.add('active');
-                }
+                if (selectedDeshifratorInputs.includes(i)) line.classList.add('active');
 
                 wire.appendChild(terminal);
                 wire.appendChild(label);
@@ -510,7 +631,6 @@
             const outputsDiv = document.createElement('div');
             outputsDiv.className = 'outputs';
 
-            // Calculate which output should be active
             let activeOutput = 0;
             for (let i = 1; i <= m; i++) {
                 if (selectedDeshifratorInputs.includes(i)) {
@@ -518,7 +638,6 @@
                 }
             }
 
-            // 1-indexed outputs
             for (let i = 1; i <= n; i++) {
                 const wire = document.createElement('div');
                 wire.className = 'wire';
@@ -533,7 +652,6 @@
                 const terminal = document.createElement('div');
                 terminal.className = 'terminal';
 
-                // Agar hech qaysi kirish tanlanmagan bo'lsa, O1 yoniq turadi
                 if (selectedDeshifratorInputs.length === 0 && i === 1) {
                     terminal.classList.add('active-red');
                     line.classList.add('active');
@@ -553,7 +671,233 @@
             circuit.appendChild(outputsDiv);
         }
 
-        // Event listeners
+        // MULTIPLEKSER LOGIC
+        let selectedMuxInput = -1;
+        let muxSelectors = [];
+
+        function updateMultiplexer() {
+            const n = parseInt(document.getElementById('mux-n').value) || 0;
+            const s = n > 0 ? Math.ceil(Math.log2(n)) : 0;
+
+            const circuit = document.getElementById('mux-circuit');
+            circuit.innerHTML = '';
+            if (n === 0 || s === 0) return;
+
+            const inputsDiv = document.createElement('div');
+            inputsDiv.className = 'inputs';
+
+            for (let i = 1; i <= n; i++) {
+                const wire = document.createElement('div');
+                wire.className = 'wire';
+                
+                const terminal = document.createElement('div');
+                terminal.className = 'terminal';
+                if (selectedMuxInput === i) terminal.classList.add('active-green');
+                terminal.onclick = () => { selectedMuxInput = i; updateMultiplexer(); };
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `D${i}`;
+
+                const line = document.createElement('div');
+                line.className = 'line';
+                if (selectedMuxInput === i) line.classList.add('active');
+
+                wire.appendChild(terminal);
+                wire.appendChild(label);
+                wire.appendChild(line);
+                inputsDiv.appendChild(wire);
+            }
+
+            const gateBox = document.createElement('div');
+            gateBox.className = 'gate-box';
+            gateBox.innerHTML = `MUX<br>${n}→1`;
+
+            const selectorGroup = document.createElement('div');
+            selectorGroup.className = 'selector-group';
+
+            for (let i = 1; i <= s; i++) {
+                const selectorWire = document.createElement('div');
+                selectorWire.className = 'selector-wire';
+
+                const terminal = document.createElement('div');
+                terminal.className = 'terminal';
+                if (muxSelectors.includes(i)) terminal.classList.add('active-blue');
+
+                terminal.onclick = () => {
+                    const idx = muxSelectors.indexOf(i);
+                    if (idx > -1) muxSelectors.splice(idx, 1);
+                    else muxSelectors.push(i);
+                    updateMultiplexer();
+                };
+
+                const line = document.createElement('div');
+                line.className = 'selector-line';
+                if (muxSelectors.includes(i)) line.classList.add('active');
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `S${i}`;
+                label.style.fontSize = '0.9em';
+
+                selectorWire.appendChild(line);
+                selectorWire.appendChild(terminal);
+                selectorWire.appendChild(label);
+                selectorGroup.appendChild(selectorWire);
+            }
+
+            gateBox.appendChild(selectorGroup);
+
+            const outputsDiv = document.createElement('div');
+            outputsDiv.className = 'outputs';
+
+            const wire = document.createElement('div');
+            wire.className = 'wire';
+
+            const line = document.createElement('div');
+            line.className = 'line';
+
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = 'Y';
+
+            const terminal = document.createElement('div');
+            terminal.className = 'terminal';
+
+            let selectedIndex = 0;
+            for (let i = 1; i <= s; i++) {
+                if (muxSelectors.includes(i)) selectedIndex += Math.pow(2, s - i);
+            }
+            selectedIndex += 1;
+
+            if (selectedMuxInput === selectedIndex) {
+                terminal.classList.add('active-green');
+                line.classList.add('active');
+            }
+
+            wire.appendChild(line);
+            wire.appendChild(label);
+            wire.appendChild(terminal);
+            outputsDiv.appendChild(wire);
+
+            circuit.appendChild(inputsDiv);
+            circuit.appendChild(gateBox);
+            circuit.appendChild(outputsDiv);
+        }
+
+        // DEMULTIPLEKSER LOGIC
+        let demuxSelectors = [];
+
+        function updateDemultiplexer() {
+            const s = parseInt(document.getElementById('demux-s').value) || 0;
+            const n = s > 0 ? Math.pow(2, s) : 0;
+
+            const circuit = document.getElementById('demux-circuit');
+            circuit.innerHTML = '';
+            if (s === 0 || n === 0) return;
+
+            const inputsDiv = document.createElement('div');
+            inputsDiv.className = 'inputs';
+
+            const wire = document.createElement('div');
+            wire.className = 'wire';
+            
+            const terminal = document.createElement('div');
+            terminal.className = 'terminal';
+            terminal.classList.add('active-green');
+
+            const label = document.createElement('div');
+            label.className = 'label';
+            label.textContent = 'D';
+
+            const line = document.createElement('div');
+            line.className = 'line';
+            line.classList.add('active');
+
+            wire.appendChild(terminal);
+            wire.appendChild(label);
+            wire.appendChild(line);
+            inputsDiv.appendChild(wire);
+
+            const gateBox = document.createElement('div');
+            gateBox.className = 'gate-box';
+            gateBox.innerHTML = `DEMUX<br>1→${n}`;
+
+            const selectorGroup = document.createElement('div');
+            selectorGroup.className = 'selector-group';
+
+            for (let i = 1; i <= s; i++) {
+                const selectorWire = document.createElement('div');
+                selectorWire.className = 'selector-wire';
+
+                const terminal = document.createElement('div');
+                terminal.className = 'terminal';
+                if (demuxSelectors.includes(i)) terminal.classList.add('active-blue');
+
+                terminal.onclick = () => {
+                    const idx = demuxSelectors.indexOf(i);
+                    if (idx > -1) demuxSelectors.splice(idx, 1);
+                    else demuxSelectors.push(i);
+                    updateDemultiplexer();
+                };
+
+                const line = document.createElement('div');
+                line.className = 'selector-line';
+                if (demuxSelectors.includes(i)) line.classList.add('active');
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `S${i}`;
+                label.style.fontSize = '0.9em';
+
+                selectorWire.appendChild(line);
+                selectorWire.appendChild(terminal);
+                selectorWire.appendChild(label);
+                selectorGroup.appendChild(selectorWire);
+            }
+
+            gateBox.appendChild(selectorGroup);
+
+            const outputsDiv = document.createElement('div');
+            outputsDiv.className = 'outputs';
+
+            let selectedIndex = 0;
+            for (let i = 1; i <= s; i++) {
+                if (demuxSelectors.includes(i)) selectedIndex += Math.pow(2, s - i);
+            }
+            selectedIndex += 1;
+
+            for (let i = 1; i <= n; i++) {
+                const wire = document.createElement('div');
+                wire.className = 'wire';
+
+                const line = document.createElement('div');
+                line.className = 'line';
+
+                const label = document.createElement('div');
+                label.className = 'label';
+                label.textContent = `Y${i}`;
+
+                const terminal = document.createElement('div');
+                terminal.className = 'terminal';
+
+                if (i === selectedIndex) {
+                    terminal.classList.add('active-green');
+                    line.classList.add('active');
+                }
+
+                wire.appendChild(line);
+                wire.appendChild(label);
+                wire.appendChild(terminal);
+		outputsDiv.appendChild(wire);
+            }
+
+            circuit.appendChild(inputsDiv);
+            circuit.appendChild(gateBox);
+            circuit.appendChild(outputsDiv);
+        }
+
+        // Event Listeners
         document.getElementById('shifrator-n').addEventListener('input', () => {
             selectedShifratorInput = -1;
             updateShifrator();
@@ -564,9 +908,22 @@
             updateDeshifrator();
         });
 
+        document.getElementById('mux-n').addEventListener('input', () => {
+            selectedMuxInput = -1;
+            muxSelectors = [];
+            updateMultiplexer();
+        });
+
+        document.getElementById('demux-s').addEventListener('input', () => {
+            demuxSelectors = [];
+            updateDemultiplexer();
+        });
+
         // Initial render
         updateShifrator();
         updateDeshifrator();
+        updateMultiplexer();
+        updateDemultiplexer();
     </script>
 </body>
 </html>
